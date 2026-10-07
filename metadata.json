@@ -1,0 +1,7 @@
+{
+  "name": "Cartas Mágicas",
+  "description": "Plataforma de cartas personalizadas de Reyes Magos, Papá Noel y Ratoncito Pérez para familias en España con vista previa interactiva y descargas protegidas.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+
