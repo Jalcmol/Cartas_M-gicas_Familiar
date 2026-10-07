@@ -2,8 +2,8 @@
 // Gestor de persistencia ultrarrápido para Vercel Serverless con Upstash Redis REST API.
 // Compatible nativo con Node.js 18+ (cero dependencias de npm requeridas).
 
-const UPSTASH_URL = process.env.UPSTASH_REDIS_REST_URL;
-const UPSTASH_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;
+const UPSTASH_URL = process.env.UPSTASH_REDIS_REST_URL || 'https://refined-sawfly-209108.upstash.io';
+const UPSTASH_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN || 'gQAAAAAAAzDUAAIgcDE5NmJmNTU4OGNlMWI0OWFlYjM2ZDE0YTU1NzYwZWRkNw';
 
 // Almacén en memoria volátil de respaldo para desarrollo local o cuando aún no se configuran las claves de Upstash
 const memoryStore = new Map();

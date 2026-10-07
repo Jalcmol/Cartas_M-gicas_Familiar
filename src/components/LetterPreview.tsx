@@ -59,29 +59,37 @@ export const LetterPreview: React.FC<LetterPreviewProps> = ({
     const box = sh.querySelector('.body') as HTMLElement | null;
     if (!box) return;
 
-    box.style.fontSize = '';
-    const base = parseFloat(getComputedStyle(sh).getPropertyValue('--body-size')) || 2.3;
-    let size = base;
-    let guard = 0;
+    const fit = () => {
+      box.style.fontSize = '';
+      const base = parseFloat(getComputedStyle(sh).getPropertyValue('--body-size')) || 2.3;
+      let size = base;
+      let guard = 0;
 
-    const overflow = () => box.scrollHeight > box.clientHeight + 1;
+      const overflow = () => box.scrollHeight > box.clientHeight + 1;
 
-    if (overflow()) {
-      while (overflow() && size > base * 0.5 && guard++ < 60) {
-        size -= 0.04;
-        box.style.fontSize = size.toFixed(2) + 'cqw';
-      }
-    } else if (box.querySelector('.letter')) {
-      while (size < base * 1.28 && guard++ < 40) {
-        const next = size + 0.05;
-        box.style.fontSize = next.toFixed(2) + 'cqw';
-        if (overflow()) {
+      if (overflow()) {
+        while (overflow() && size > base * 0.45 && guard++ < 60) {
+          size -= 0.04;
           box.style.fontSize = size.toFixed(2) + 'cqw';
-          break;
         }
-        size = next;
+      } else if (box.querySelector('.letter')) {
+        while (size < base * 1.28 && guard++ < 40) {
+          const next = size + 0.05;
+          box.style.fontSize = next.toFixed(2) + 'cqw';
+          if (overflow()) {
+            box.style.fontSize = size.toFixed(2) + 'cqw';
+            break;
+          }
+          size = next;
+        }
       }
-    }
+    };
+
+    fit();
+    window.addEventListener('beforeprint', fit);
+    return () => {
+      window.removeEventListener('beforeprint', fit);
+    };
   }, [docId, theme, kids, joint, date, parentSign]);
 
   return (

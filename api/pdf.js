@@ -1,6 +1,6 @@
 // api/pdf.js
-// Endpoint Serverless de Vercel para generar la Carta Mágica limpia
-// con el sistema visual exacto de 12 temas, esquinas ornamentales y sellos oficiales
+// Endpoint Serverless universal (compatible con Vercel, Netlify Functions y Express)
+// Genera la Carta Mágica limpia sin marcas de agua, descuenta 1 descarga y devuelve el HTML de alta definición para imprimir en A4.
 
 import fs from 'fs';
 import path from 'path';
@@ -97,28 +97,71 @@ const letter = (greet, paras, close) =>
   '</div></div>';
 
 export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  const isNetlify = !res || typeof res.status !== 'function';
 
-  if (req.method === 'OPTIONS') return res.status(200).end();
-  if (req.method !== 'POST') return res.status(405).json({ error: 'Método no permitido.' });
+  const corsHeaders = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+  };
+
+  const method = isNetlify ? req.method : req.method;
+  if (method === 'OPTIONS') {
+    if (isNetlify) return new Response(null, { status: 200, headers: corsHeaders });
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    return res.status(200).end();
+  }
+
+  const sendError = (statusCode, msg) => {
+    if (isNetlify) {
+      return new Response(JSON.stringify({ error: msg }), {
+        status: statusCode,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    return res.status(statusCode).json({ error: msg });
+  };
 
   try {
-    const { key, licenseKey, only, state } = req.body || {};
+    let bodyData = {};
+    if (isNetlify) {
+      try {
+        bodyData = await req.json();
+      } catch (e) {
+        bodyData = {};
+      }
+    } else {
+      bodyData = req.body || {};
+    }
+
+    const { key, licenseKey, only, state } = bodyData;
     const finalKey = String(key || licenseKey || '').trim();
 
-    if (!finalKey) return res.status(400).json({ error: 'Se requiere código de compra Gumroad.' });
+    if (!finalKey) return sendError(400, 'Se requiere código de compra Gumroad.');
 
     // 1. Validar licencia con Gumroad
     const gumroad = await verifyGumroadLicense(finalKey);
-    if (!gumroad.success) return res.status(401).json({ error: gumroad.error });
+    if (!gumroad.success) return sendError(401, gumroad.error);
 
-    // 2. Extraer datos del estado
-    const docId = state?.doc || 'reyes';
-    const themeId = state?.theme || 'pergamino';
+    // 2. Extraer datos del estado (soporta ambos formatos de payload)
+    const docId = state?.doc || bodyData.characterId || 'reyes';
+    const themeId = state?.theme || bodyData.templateId || 'pergamino';
     const mode = state?.mode || 'individual';
-    const rawKids = Array.isArray(state?.kids) && state.kids.length ? state.kids : [{ name: 'Lucía', achv: '', extra: '', treat: 'Querida' }];
+    const rawKids = Array.isArray(state?.kids) && state.kids.length
+      ? state.kids
+      : [
+          {
+            name: bodyData.childName || 'Pequeño',
+            achv: bodyData.achievement || '',
+            extra: bodyData.behavior || bodyData.customNote || '',
+            treat: 'Querido',
+          },
+        ];
     const isoDate = state?.date || new Date().toISOString().slice(0, 10);
     const parentSign = state?.sign || 'Mamá y Papá';
 
@@ -150,9 +193,7 @@ export default async function handler(req, res) {
     const remaining = Math.max(0, total - used);
 
     if (remaining <= 0) {
-      return res.status(403).json({
-        error: `Has consumido todas las descargas (${total} de ${total}) de tu pack.`,
-      });
+      return sendError(403, `Has consumido todas las descargas (${total} de ${total}) de tu pack.`);
     }
 
     // Registrar niños respetando límite de 6 y tolerancia Levenshtein
@@ -180,10 +221,20 @@ export default async function handler(req, res) {
     await saveLicenseRecord(finalKey, record);
 
     // 4. Compilar plantilla HTML limpia
-    const templatePath = path.join(process.cwd(), 'api', '_render.html');
-    let templateHtml = fs.readFileSync(templatePath, 'utf8');
+    let templateHtml = '';
+    try {
+      const templatePath = path.join(process.cwd(), 'api', '_render.html');
+      if (fs.existsSync(templatePath)) {
+        templateHtml = fs.readFileSync(templatePath, 'utf8');
+      }
+    } catch (e) {
+      console.warn('[api/pdf] No se pudo leer _render.html del disco, usando generador interno');
+    }
 
-    // Construcción del contenido
+    if (!templateHtml) {
+      templateHtml = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Carta Mágica Oficial</title><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Pinyon+Script&family=Quicksand:wght@500;600&display=swap" rel="stylesheet"><style>@page{size:A4 portrait;margin:0}*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}body{margin:0;padding:0;background:#fff;display:flex;justify-content:center;align-items:center}.sheet{position:relative;width:210mm;height:296.6mm;container-type:inline-size;overflow:hidden;background:var(--paper);color:var(--ink);font-family:'Quicksand',sans-serif}.frame{position:absolute;inset:3.2cqw;border:.4cqw solid var(--accent);pointer-events:none}.inner{position:absolute;inset:6.5cqw 8cqw 6.2cqw;display:flex;flex-direction:column;align-items:center;text-align:center}.crest{width:8.5cqw;height:8.5cqw;color:var(--accent);margin-bottom:1cqw}.kicker{font-family:'Cinzel',serif;font-size:1.55cqw;letter-spacing:.32em;text-transform:uppercase;color:var(--accent);font-weight:600}.title{font-family:'Cinzel',serif;font-weight:700;font-size:5.4cqw;margin:.6cqw 0 .3cqw;color:var(--ink)}.script{font-family:'Pinyon Script',cursive;font-size:4cqw;color:var(--accent);margin-bottom:.6cqw}.divider{display:flex;align-items:center;gap:1.8cqw;width:58%;margin:.4cqw 0 1.8cqw;color:var(--accent);opacity:.85}.divider i{flex:1;height:.14cqw;background:currentColor}.divider span{font-size:1.5cqw}.body{flex:1;width:100%;font-size:2.3cqw;line-height:1.62;color:var(--ink);text-align:justify}.footer{display:flex;align-items:flex-end;justify-content:space-between;width:100%;margin-top:1.4cqw;border-top:.15cqw dashed var(--accent)}.f-block{text-align:left;flex:1}.f-block.sig{text-align:right}.f-block .val{font-family:'Cinzel',serif;font-weight:700;font-size:1.9cqw;color:var(--accent)}.f-block .cap{font-size:1.18cqw;text-transform:uppercase;letter-spacing:.2em;opacity:.65}.seal-wrap{flex:none;margin:0 2cqw}.seal{width:14cqw;height:14cqw}[data-theme="pergamino"]{--paper:#f8f1de;--ink:#3b2816;--accent:#8b261b;--seal:#8b181b;--seal-ink:#f8f1de}[data-theme="rojo"]{--paper:#fffaf3;--ink:#2a201c;--accent:#a8111c;--seal:#a8111c;--seal-ink:#fffaf3}[data-theme="azul"]{--paper:#0c1c38;--ink:#f0f4fc;--accent:#d4af37;--seal:#d4af37;--seal-ink:#0c1c38}</style></head><body><article class="sheet" data-theme="{{THEME_ID}}"><div class="frame"></div>{{CORNERS_HTML}}<div class="inner"><div class="crest-wrap">{{CREST_SVG}}</div><div class="kicker">{{KICKER_TEXT}}</div><h2 class="title">{{TITLE_TEXT}}</h2><div class="script">{{SCRIPT_TEXT}}</div><div class="divider"><i></i><span>✦</span><i></i></div><div class="body {{DIPLOMA_CLASS}}">{{BODY_HTML}}</div><div class="footer"><div class="f-block"><div class="val">{{DATE_TEXT}}</div><div class="cap">{{DATE_CAP}}</div></div><div class="seal-wrap">{{SEAL_SVG}}</div><div class="f-block sig"><div class="val" {{SIG_STYLE}}>{{SIG_NAME}}</div><div class="cap">{{SIG_CAP}}</div></div></div></div></article></body></html>`;
+    }
+
     const k = activeKids[0];
     const treatJ = activeKids.every((x) => x.treat === 'Querida') ? 'Queridas' : 'Queridos';
 
@@ -239,7 +290,6 @@ export default async function handler(req, res) {
             'Guarda tu diente en una cajita bajo la almohada y duerme tranquilo. Mientras sueñas, vendré de puntillas a recogerlo para construir con él un rinconcito de mi palacio de dientes, y a cambio te dejaré un pequeño regalo.',
           ], 'Con un abrazo de bigotes');
     } else {
-      // reyes
       bodyHtml = joint
         ? letter(treatJ + ' ' + esc(joinNames(activeKids)) + ',', [
             'Desde las lejanas tierras de Oriente, siguiendo el rastro de la estrella más brillante, os escribimos estas líneas antes de que nuestros camellos emprendan el largo viaje hasta vuestra casa.',
@@ -275,11 +325,23 @@ export default async function handler(req, res) {
       .replace(/\{\{SIG_CAP\}\}/g, sigCap);
 
     const newRemaining = Math.max(0, total - record.usedDownloads);
+
+    if (isNetlify) {
+      return new Response(finalHtml, {
+        status: 200,
+        headers: {
+          ...corsHeaders,
+          'Content-Type': 'text/html; charset=utf-8',
+          'X-Remaining': String(newRemaining),
+        },
+      });
+    }
+
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
     res.setHeader('X-Remaining', String(newRemaining));
     return res.status(200).send(finalHtml);
   } catch (err) {
     console.error('[api/pdf Error]:', err);
-    return res.status(500).json({ error: 'Error al generar la carta.' });
+    return sendError(500, 'Error al generar la carta.');
   }
 }

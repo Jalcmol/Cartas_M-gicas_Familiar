@@ -27,11 +27,11 @@ export const LandingView: React.FC<LandingViewProps> = ({ onGoToApp, onOpenArchi
             Crea cartas oficiales de los <strong className="text-stone-900">Reyes Magos, Papá Noel y el Ratoncito Pérez</strong> con sellos de lacre, matasellos reales y detalles que solo ellos saben.
           </p>
 
-          {/* Valor cero timo destacado */}
+          {/* Valor destacado */}
           <div className="p-4 bg-amber-50/80 border border-amber-200/90 rounded-xl text-xs sm:text-sm text-stone-800 flex flex-col sm:flex-row items-center justify-center gap-4 shadow-xs">
             <div className="flex items-center gap-2 text-amber-950 font-bold">
               <ShieldCheck className="w-5 h-5 text-amber-700" />
-              <span>Pack Familiar "Cero Timo":</span>
+              <span>Pack Familiar Completo:</span>
             </div>
             <span className="text-stone-700">
               Solo <strong className="text-amber-900 text-base">4,99 €</strong> por 10 cartas descargables · Sin caducidad · Hasta 6 niños incluidos
@@ -106,7 +106,7 @@ export const LandingView: React.FC<LandingViewProps> = ({ onGoToApp, onOpenArchi
         </div>
       </section>
 
-      {/* COMPARATIVA "CERO TIMO" */}
+      {/* COMPARATIVA TRANSPARENTE */}
       <section className="max-w-5xl mx-auto px-4">
         <div className="bg-stone-900 text-stone-100 rounded-2xl p-6 sm:p-10 border border-stone-800 shadow-xl space-y-8">
           <div className="text-center max-w-2xl mx-auto space-y-2">

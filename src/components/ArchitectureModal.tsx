@@ -30,7 +30,7 @@ export const ArchitectureModal: React.FC<ArchitectureModalProps> = ({ isOpen, on
                 Arquitectura Técnica: Vercel Serverless + Upstash Redis + Gumroad
               </h2>
               <p className="text-xs text-stone-400">
-                Archivos de producción listos para desplegar · Filosofía "Cero Timo"
+                Archivos de producción listos para desplegar · Modelo Transparente
               </p>
             </div>
           </div>
@@ -73,7 +73,7 @@ export const ArchitectureModal: React.FC<ArchitectureModalProps> = ({ isOpen, on
             <div className="space-y-4">
               <div className="p-4 bg-amber-950/30 border border-amber-800/40 rounded-lg text-amber-200">
                 <h4 className="font-bold text-amber-300 mb-1 flex items-center gap-2">
-                  <Sparkles className="w-4 h-4" /> Filosofía de Negocio "Cero Timo" y Rentabilidad
+                  <Sparkles className="w-4 h-4" /> Filosofía de Negocio Justa y Rentabilidad
                 </h4>
                 <p className="text-xs text-stone-300 leading-relaxed">
                   A diferencia de servicios que cobran por cada carta individual o imponen caducidades de apenas unos días en enero, Cartas Mágicas ofrece un <strong>Pack de Acceso Total (10 descargas por 4,99 €)</strong>. El saldo se conserva todo el año, permitiendo amortizar la compra para el Ratoncito Pérez o la siguiente Navidad.
@@ -209,7 +209,7 @@ export default async function handler(req, res) {
   -d "increment_uses_count=false"`}
               </div>
               <p className="text-stone-400">
-                <strong>Clave técnica:</strong> Configuramos <code className="text-amber-300">increment_uses_count=false</code> porque la gestión granular del monedero (saldo restante, niños vinculados y correcciones ortográficas) la gestionamos en Upstash Redis con nuestra lógica de "Cero Timo".
+                <strong>Clave técnica:</strong> Configuramos <code className="text-amber-300">increment_uses_count=false</code> porque la gestión granular del monedero (saldo restante, niños vinculados y correcciones ortográficas) la gestionamos en Upstash Redis con nuestra lógica de control familiar.
               </p>
             </div>
           )}

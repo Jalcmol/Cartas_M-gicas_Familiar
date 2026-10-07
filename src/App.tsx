@@ -13,6 +13,7 @@ import { SnowCanvas } from './components/SnowCanvas';
 import { Footer } from './components/Footer';
 import { ChildProfile, DocumentId, ThemeInfo, LicenseStatus } from './types';
 import { THEMES } from './data/letterTemplates';
+import { verifyLicense } from './services/upstashService';
 
 export default function App() {
   const [currentView, setCurrentView] = useState<'landing' | 'studio'>('studio');
@@ -123,14 +124,14 @@ export default function App() {
 
     setIsCheckingLicense(true);
     try {
-      const res = await fetch(`/api/check?key=${encodeURIComponent(key)}`);
-      const data = await res.json();
+      // Intentar primero con Upstash Redis directo (compatible con Netlify sin funciones backend)
+      const data = await verifyLicense(key);
 
       if (data.valid) {
         setLicenseStatus(data);
         localStorage.setItem('cartas-magicas-lic', key);
         setLicMsg({
-          text: `Código válido · Te quedan ${data.remainingDownloads} de ${data.totalDownloads} descargas.`,
+          text: `Código válido · Te quedan ${data.remainingDownloads} de ${data.totalDownloads} descargas en Upstash.`,
           ok: true,
         });
       } else {
@@ -270,6 +271,12 @@ export default function App() {
       <DownloadModal
         isOpen={isDownloadModalOpen}
         onClose={() => setIsDownloadModalOpen(false)}
+        kids={kids}
+        docId={docId}
+        theme={theme}
+        mode={mode}
+        date={date}
+        parentSign={parentSign}
         currentChild={currentChildProfile}
         currentCharacter={currentCharacterLegacy}
         currentTemplate={currentTemplateLegacy}

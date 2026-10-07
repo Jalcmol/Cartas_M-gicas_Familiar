@@ -821,27 +821,74 @@
   to { opacity: 1; transform: none; }
 }
 
+@page {
+  size: A4 portrait;
+  margin: 0mm;
+}
+
 @media print {
   html, body {
     background: #fff !important;
-    min-height: 0;
+    color: #000 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 210mm !important;
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
   }
-  .no-print {
+
+  /* Ocultar toda la interfaz de la aplicación al imprimir */
+  header, footer, nav, .no-print, .panel, .print-actions, [role="tablist"], .tabs, button {
     display: none !important;
   }
+
+  .stage {
+    padding: 0 !important;
+    margin: 0 !important;
+    gap: 0 !important;
+    display: block !important;
+  }
+
+  .sheet-wrap {
+    width: 210mm !important;
+    max-width: 210mm !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
+  }
+
+  .sheet-label {
+    display: none !important;
+  }
+
   .sheet {
     width: 210mm !important;
-    height: 296.6mm !important;
+    height: 296mm !important;
+    max-height: 296mm !important;
     aspect-ratio: auto !important;
     box-shadow: none !important;
     border-radius: 0 !important;
-    margin: 0 !important;
-    break-inside: avoid;
+    margin: 0 auto !important;
+    padding: 0 !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    page-break-after: page !important;
+    break-after: page !important;
     animation: none !important;
   }
+
+  .sheet:last-child,
+  .sheet:last-of-type {
+    page-break-after: avoid !important;
+    break-after: avoid !important;
+  }
+
   .sheet *, .sheet::before, .sheet::after {
     animation: none !important;
   }
+
   * {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;

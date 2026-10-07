@@ -8,7 +8,7 @@ interface FooterProps {
 
 export const Footer: React.FC<FooterProps> = ({ onOpenArchitecture, onNavigate }) => {
   return (
-    <footer className="border-t border-stone-200/80 bg-stone-100/60 py-10 px-4 text-xs text-stone-600">
+    <footer className="border-t border-stone-200/80 bg-stone-100/60 py-10 px-4 text-xs text-stone-600 no-print">
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
         <div>
           <div className="text-base font-bold text-stone-900 font-['Cinzel',serif] mb-1">
@@ -41,7 +41,7 @@ export const Footer: React.FC<FooterProps> = ({ onOpenArchitecture, onNavigate }
         </div>
 
         <div className="text-center md:text-right text-stone-500 text-[11px]">
-          <p>© {new Date().getFullYear()} Cartas Mágicas. Filosofía "Cero Timo".</p>
+          <p>© {new Date().getFullYear()} Cartas Mágicas. Calidad y Magia Garantizada.</p>
           <p className="mt-0.5">Vercel Serverless + Upstash Redis REST API.</p>
         </div>
       </div>
