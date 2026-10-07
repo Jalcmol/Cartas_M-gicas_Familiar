@@ -1,3 +1,24 @@
 [build]
-  command = "npm install --legacy-peer-deps && npm run build"
   publish = "dist"
+  command = "npm run build"
+
+[build.environment]
+  UPSTASH_REDIS_REST_URL = "https://refined-sawfly-209108.upstash.io"
+  UPSTASH_REDIS_REST_TOKEN = "gQAAAAAAAzDUAAIgcDE5NmJmNTU4OGNlMWI0OWFlYjM2ZDE0YTU1NzYwZWRkNw"
+  GUMROAD_PRODUCT_PERMALINK = "cartas-magicas-pack"
+  TOTAL_DOWNLOADS_PER_PACK = "10"
+  MAX_NAME_EDITS = "2"
+  MAX_CHILDREN_PER_PACK = "6"
+
+[functions]
+  directory = "api"
+
+[[redirects]]
+  from = "/api/*"
+  to = "/api/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
